@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blog Posts</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        .container { max-width: 900px; margin: auto; }
+        .post { padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; }
+        .post h2 { margin-top: 0; }
+        .filters { margin-bottom: 20px; display: flex; gap: 10px; }
+        .pagination { margin-top: 25px; text-align: center; }
+        .pagination a { padding: 8px 12px; border: 1px solid #ddd; margin: 0 4px; text-decoration: none; }
+        .pagination span { padding: 8px 12px; }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <h1>All Posts</h1>
+
+    {% comment %} <!-- Filters -->
+    <form method="GET" class="filters">
+        <input type="text" name="search" placeholder="Search..." value="{{ search }}">
+
+        <input type="text" name="category" placeholder="Category..." value="{{ category }}">
+
+        <input type="text" name="tag" placeholder="Tag..." value="{{ tag }}">
+
+        <button type="submit">Filter</button>
+    </form> {% endcomment %}
+
+
+    <!-- Post List -->
+    {% for post in posts %}
+        <div class="post">
+            <h2>{{ post.title }}</h2>
+            <small>
+                By {{ post.author }} |
+                {{ post.published_date|date:"F d, Y" }} |
+                Category: {{ post.category.name }}
+            </small>
+
+            <p>{{ post.content|truncatewords:30 }}</p>
+
+            {% comment %} <a href="{% url 'post_detail' post.pk %}">Read More</a> {% endcomment %}
+        </div>
+    {% empty %}
+        <p>No posts found.</p>
+    {% endfor %}
+
+
+    <!-- Pagination -->
+    <div class="pagination">
+        {% if posts.has_previous %}
+            <a href="?page={{ posts.previous_page_number }}&search={{ search }}&category={{ category }}&tag={{ tag }}">Previous</a>
+        {% endif %}
+
+        <span>Page {{ posts.number }} of {{ posts.paginator.num_pages }}</span>
+
+        {% if posts.has_next %}
+            <a href="?page={{ posts.next_page_number }}&search={{ search }}&category={{ category }}&tag={{ tag }}">Next</a>
+        {% endif %}
+    </div>
+
+</div>
+</body>
+</html>
