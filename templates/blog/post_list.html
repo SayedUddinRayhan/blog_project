@@ -1,68 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Blog Posts</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 30px; }
-        .container { max-width: 900px; margin: auto; }
-        .post { padding: 15px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; }
-        .post h2 { margin-top: 0; }
-        .filters { margin-bottom: 20px; display: flex; gap: 10px; }
-        .pagination { margin-top: 25px; text-align: center; }
-        .pagination a { padding: 8px 12px; border: 1px solid #ddd; margin: 0 4px; text-decoration: none; }
-        .pagination span { padding: 8px 12px; }
-    </style>
-</head>
-<body>
-<div class="container">
+{% extends 'base.html' %}
 
-    <h1>All Posts</h1>
+{% block title %}All Posts{% endblock %}
 
-    {% comment %} <!-- Filters -->
-    <form method="GET" class="filters">
-        <input type="text" name="search" placeholder="Search..." value="{{ search }}">
+{% block content %}
 
-        <input type="text" name="category" placeholder="Category..." value="{{ category }}">
+<h2 class="mb-4">Latest Posts</h2>
 
-        <input type="text" name="tag" placeholder="Tag..." value="{{ tag }}">
+<!-- Search Form -->
+<form method="GET" class="row mb-4">
+    <div class="col-md-4">
+        <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="Search...">
+    </div>
+    <div class="col-md-3">
+        <input type="text" name="category" value="{{ category }}" class="form-control" placeholder="Filter by Category">
+    </div>
+    <div class="col-md-3">
+        <input type="text" name="tag" value="{{ tag }}" class="form-control" placeholder="Filter by Tag">
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary w-100">Filter</button>
+    </div>
+</form>
 
-        <button type="submit">Filter</button>
-    </form> {% endcomment %}
+<!-- Posts -->
+{% for post in posts %}
+<div class="card mb-3 shadow-sm">
+    <div class="card-body">
+        <h4>
+            <a href="{% url 'post_detail' post.pk %}">{{ post.title }}</a>
+        </h4>
 
+        <small class="text-muted">
+            By {{ post.author }} | {{ post.published_date|date:"M d, Y" }}
+        </small>
 
-    <!-- Post List -->
-    {% for post in posts %}
-        <div class="post">
-            <h2>{{ post.title }}</h2>
-            <small>
-                By {{ post.author }} |
-                {{ post.published_date|date:"F d, Y" }} |
-                Category: {{ post.category.name }}
-            </small>
+        <p class="mt-2">{{ post.content|truncatechars:120|safe }}</p>
 
-            <p>{{ post.content|truncatewords:30 }}</p>
+        <span class="badge bg-dark">{{ post.category }}</span>
 
-            {% comment %} <a href="{% url 'post_detail' post.pk %}">Read More</a> {% endcomment %}
-        </div>
-    {% empty %}
-        <p>No posts found.</p>
-    {% endfor %}
+        {% for tag in post.tags.all %}
+        <span class="badge bg-secondary">{{ tag }}</span>
+        {% endfor %}
+    </div>
+</div>
+{% empty %}
+<p>No posts found.</p>
+{% endfor %}
 
-
-    <!-- Pagination -->
-    <div class="pagination">
+<!-- Pagination -->
+<nav>
+    <ul class="pagination justify-content-center">
         {% if posts.has_previous %}
-            <a href="?page={{ posts.previous_page_number }}&search={{ search }}&category={{ category }}&tag={{ tag }}">Previous</a>
+            <li class="page-item"><a class="page-link" href="?page={{ posts.previous_page_number }}">Previous</a></li>
         {% endif %}
 
-        <span>Page {{ posts.number }} of {{ posts.paginator.num_pages }}</span>
+        <li class="page-item active"><a class="page-link">{{ posts.number }}</a></li>
 
         {% if posts.has_next %}
-            <a href="?page={{ posts.next_page_number }}&search={{ search }}&category={{ category }}&tag={{ tag }}">Next</a>
+            <li class="page-item"><a class="page-link" href="?page={{ posts.next_page_number }}">Next</a></li>
         {% endif %}
-    </div>
+    </ul>
+</nav>
 
-</div>
-</body>
-</html>
+{% endblock %}

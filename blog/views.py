@@ -8,6 +8,30 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 
 # Create your views here.
+
+
+class LoginView(View):
+    def get(self, request):
+        return render(request, 'auth/login.html')
+
+    def post(self, request):
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user:
+            login(request, user)
+            return redirect('post_list')
+        else:
+            return render(request, 'auth/login.html', {'error': 'Invalid credentials'})
+
+
+class LogoutView(View):
+    def post(self, request):
+        logout(request)
+        return redirect('post_list')
+
 class PostListView(View):
     def get(self, request):
         categoryQuery = request.GET.get('category')
@@ -43,7 +67,7 @@ class PostListView(View):
             'search': searchQuery,
         }
 
-        return render(request, 'post_list.html', context)
+        return render(request, 'blog/post_list.html', context)
 
 class PostDetailView(View):
     def post(self, request, pk):
@@ -86,7 +110,7 @@ class PostDetailView(View):
             'liked_by_user': liked_by_user,
         }
 
-        return render(request, 'post_detail.html', context)
+        return render(request, 'blog/post_detail.html', context)
 
 class ToggleLikeView(View):
     def post(self, request, pk):
@@ -104,7 +128,7 @@ class ToggleLikeView(View):
 class CreatePostView(View):
     def get(self, request):
         form = PostForm()
-        return render(request, 'create_post.html', {'form': form})
+        return render(request, 'blog/create_post.html', {'form': form})
 
     def post(self, request):
         form = PostForm(request.POST)
@@ -114,7 +138,7 @@ class CreatePostView(View):
             post.save()
             form.save_m2m()  # Save many-to-many relationships
             return redirect('post_detail', pk=post.pk)
-        return render(request, 'create_post.html', {'form': form})
+        return render(request, 'blog/create_post.html', {'form': form})
 
 class EditPostView(View):
     def get(self, request, pk):
@@ -128,7 +152,7 @@ class EditPostView(View):
         if form.is_valid():
             form.save()
             return redirect('post_detail', pk=post.pk)
-        return render(request, 'edit_post.html', {'form': form, 'post': post})
+        return render(request, 'blog/edit_post.html', {'form': form, 'post': post})
 
 class DeletePostView(View):
     def post(self, request, pk):
